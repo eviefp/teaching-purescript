@@ -253,7 +253,8 @@ data Three = TOne | TTwo | TThree
 ```
 What's the cardinality for:
 ```purescript
-data T1 = C1 Three Boolean
+data T1  C1 Three Boolean
+
 data T2 = C2 T1 Three
 data T3 = C3 Three Three
 data T4 = C4 T2 T3
@@ -267,4 +268,87 @@ data T9 = C9 (Three -> Three)
 data T10 = C10 (T2 -> T4)
 
 data T11 = C11_1 One | C11_2 (T1 -> T2) | C11_3 (T2 -> T4) T8
+```
+
+```purescript
+data T1 = C1 Three Boolean
+{-
+T1 = C1 Trhee Boolean
+C1 is a product so
+|C1| = |Three| * |Boolean|
+|C1| = (1 + 1 + 1) * (1 + 1) = 6
+-}
+data T2 = C2 T1 Three
+{-
+6 * 3 = 18
+-}
+
+data T3 = C3 Three Three
+{-3 
+C3 = 1
+3-}
+data T4 = C4 T2 T3
+{-
+ 3 A/F 3 3
+ 3 A 3 3
+ 3 F 3 3
+ C4 = 2
+-}
+
+data T5 = C51 Boolean | C52 T4
+{-
+|T5| = |C51| + |C52|
+|C51| = 2
+|C52| = ...
+
+-}
+data T6 = C61 T1 | C62 T2 | C63 T4 | C64 T5
+{-
+     C1         C2                C2               C16
+1. 3 A/F   2. 3 A/F 3    3. 3 A/F 3 3 3 4.    4. A/F A/F 3 3
+    2*           2*            2*                 2*  2 = 32
+
+-}
+
+data T7 = C7 (One -> One)
+{-
+1 ^ 1 = 1
+
+-}
+
+data T8 = C8 (Three -> Boolean)
+{-
+2^3
+
+Boolean -> Boolean
+2^2 = 4
+id
+not
+const true
+const false
+
+-}
+
+
+data T9 = C9 (Three -> Three)
+{-
+C1
+-}
+data T10 = C10 (T2 -> T4)
+{-
+3 A/F 3 -> 3 A/F 3 3 3
+ 2^2 C4
+3 A 3 3 A 3 3 3
+3 A 3 3 F 3 3 3
+3 F 3 3 A 3 3 3
+3 F 3 3 F 3 3 3 
+-}
+
+
+data T11 = C11_1 One | C11_2 (T1 -> T2) | C11_3 (T2 -> T4) T8
+
+{-
+             three -> three       |   3 A/F -> 3 A/F 3   | 3 A/F 3 -> 3 A/F 3 3 3      three-> boolean
+                C1                | C4                   |          C4                          C2
+-}
 ```
