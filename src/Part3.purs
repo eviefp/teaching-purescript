@@ -202,16 +202,25 @@ E   2
 {------------------- Homework
 -}
 
+-- The product of the ints in a 
 productTree :: TreeInt -> Int
-productTree _ = 0
+productTree EmptyTree = 1
+productTree (Node left x right) = productTree left * x * productTree right
+
 
 -- Count how many times we can find 'n' inside 't'
 findCountTree :: Int -> TreeInt -> Int
-findCountTree n t = 0
+findCountTree _ EmptyTree = 0
+findCountTree x (Node left y right) = 
+    if x == y
+        then 1 + findCountTree x left + findCountTree x right
+        else findCountTree x left + findCountTree x right
 
 -- Apply function 'f' to each value in the tree and return the resulting tree.
 mapTree :: (Int -> Int) -> TreeInt -> TreeInt
-mapTree f t = t
+mapTree _ EmptyTree = EmptyTree
+mapTree f (Node left x right) = Node (mapTree f left) (f x) (mapTree f right)
+
 
 {- Given some function 'f' which takes 3 ints and returns int
 And some default int 'x'
@@ -222,8 +231,34 @@ else we have a Node left n right, so we will do: f "left" n "right"
     where "left" and "right" is the result of folding further left/right
 
 -}
+
+{-
+      5
+     / \
+    /   \
+  5     11
+  / \    /\
+ 4   E  E  E
+ / \
+E   2
+   / \
+  E   E
+
+f a b c = a + b + c
+
+g a b c = a * b * c 
+
+-}
+
 foldTree :: (Int -> Int -> Int -> Int) -> Int -> TreeInt -> Int
-foldTree f x t = 0
+foldTree _ x EmptyTree = x
+foldTree f x (Node left y right) =
+    f y (foldTree f x left) (foldTree f x right)
+
+sumTree' :: TreeInt -> Int
+sumTree' t = foldTree go 0 t
+  where
+    go a b c = a + b + c
 
 -- Given this type (identical with ListInt, except we hold strings)
 data ListString
@@ -234,14 +269,31 @@ data ListString
 -- for example, given
 -- MkList        1  (MkList        2  Empty  ), the return should be:
 -- MkListString "1" (MkListString "2" EmptyLS)
+showInt :: Int -> String
+showInt i = show i
+
 toString :: ListInt -> ListString
-toString l = EmptyLS
+toString Empty = EmptyLS
+toString (MkList int listint) = MkListString (show int) (toString listint)
 
 -- Given a list string such as ["hello", "world", "42"]
 -- the result needs to be "helloworld42"
 -- hint: use (<>) :: String -> String -> String
 -- e.g.: "hello" <> "world" == "helloworld"
 concatenate :: ListString -> String
-concatenate _ = ""
+concatenate EmptyLS = ""
+concatenate (MkListString string liststring) = string <> concatenate liststring
 
 -- write mapListString and foldListString
+-- map (+ 1) [1, 2] => [2, 3]
+
+mapListString :: (String -> String) -> ListString -> ListString
+mapListString f  EmptyLS = EmptyLS
+mapListString f (MkListString string liststring) =
+   MkListString (f string) (mapListString f liststring)
+
+
+foldListString :: (String -> String -> String) -> String -> ListString -> String
+foldListString f x EmptyLS = x 
+foldListString f x (MkListString string liststring) = f string (foldListString f x liststring)
+
