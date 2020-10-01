@@ -2,6 +2,8 @@ module Part4 where
 
 import Prelude
 
+import Part3 (ListString(..))
+
 {-
 We saw how we can create new types using the `data` keyword.
 -}
@@ -40,14 +42,6 @@ increment'' :: Point -> Point
 increment'' p = p + {x: 1, y: 1, z: 1}
 
 ------------------------------------------
-
-data TreeInt
-    = EmptyTree
-    | Node
-        { left :: TreeInt
-        , value :: Int
-        , right :: TreeInt
-        }
 
 mapTree :: (Int -> Int) -> TreeInt -> TreeInt
 mapTree _ EmptyTree = EmptyTree
@@ -224,9 +218,10 @@ use = getX'' somePoint
 
 -- When doing this, we can define instances for this type!
 data DPoint = MkDPoint { x :: Int, y :: Int}
+-- data DPoint = MkDPoint Int Int
 
 someDPoint :: DPoint
-someDPoint = MkDPoint { x: 1, y: 2}
+someDPoint = MkDPoint { x: 1, y: 2 }
 
 getDX :: DPoint -> Int
 getDX (MkDPoint p) = p.x
@@ -236,8 +231,24 @@ useD = getDX someDPoint
 
 
 -- 1. Write a 'Print' instance for 'DPoint'
+
+instance printDPoint :: Print DPoint where
+  print :: DPoint -> String
+  print (MkDPoint { x, y }) = "(" <> print x <> "," <> print y <> ")"
+
+  -- {x, y} => {1, 2} => (1, 2)
+
 -- 2. Write a 'Equal' instance for 'DPoint'
+instance equalDpoint :: Equal DPoint where
+    equal :: DPoint -> DPoint -> Boolean
+    equal (MkDPoint p1) (MkDPoint p2) = equal p1.x p2.x && equal p1.y p2.y
+
 -- 3. Write an 'Compare' instance for 'DPoint' where the 'x' is "more important"
+
+instance compareDPoint :: Compare DPoint where
+    compare (MkDPoint p1) (MkDPoint p2)
+        | p1.x /= p2.x = compare p1.x p2.x
+        | otherwise    = compare p1.y p2.y
 
 -- 4. Take the ListInt type from lesson 3. Declare the 3 instances above for it as well.
 -- The same idea applies: [3, 2, 5] > [2, 10, 10] (first different element decides comparison)
@@ -248,7 +259,85 @@ data ListInt
     = Empty
     | MkList Int ListInt
 
+instance printListInt :: Print ListInt where
+  print :: ListInt -> String 
+  print Empty = "Empty"
+  print (MkList int rest) = print int <> "," <> print rest
+
+-- equal instance
+instance equalListInt :: Equal ListInt where
+  equal :: ListInt -> ListInt -> Boolean
+  equal Empty Empty = true
+  equal Empty l2 = false
+  equal l1 Empty = false
+  equal (MkList x rest1) (MkList y rest2) = equal x y && equal rest1 rest2
+
+  --COMPARE INSTANCE
+instance compareListInt :: Compare ListInt where
+  compare Empty _ = Lower
+  compare _ Empty = Greater
+  compare (MkList a rest3) (MkList b rest4)
+      | a /= b    = compare a b
+      | otherwise = compare rest3 rest4
+
+
 -- 5. Do the same for TreeInt
+
+data TreeInt
+    = EmptyTree
+    | Node
+        { left :: TreeInt
+        , value :: Int
+        , right :: TreeInt
+        }
+
+        --PRINT
+
+instance printTreeInt :: Print TreeInt where
+  print :: TreeInt -> String
+  print EmptyTree = "Empty"
+  print (Node {left, value, right}) = print left <> "," <> print value <> "," <> print right
+
+--EQUAL INSTANCE
+
+instance equalTreeInt :: Equal TreeInt where
+  equal :: TreeInt -> TreeInt -> Boolean
+  equal EmptyTree EmptyTree = true
+  equal (Node n1) (Node n2) =
+    equal n1.left n2.left
+      && equal n1.value n2.value
+      && equal n1.right n2.right
+  equal _ _ = false
+
+
+--       5
+--      / \
+--     /   \
+--    4     10
+--   / \    /\
+--  3   E  E  E
+--  / \
+-- E   2
+
+--       3
+--      / \
+--     /   \
+--    4     10
+--   / \    /\
+--  3   E  E  E
+--  / \
+-- E   2
+
+--COMPARE INSTANCE WHERE FIRST VALUE IS MORE IMPORTANT
+instance compareTreeInt :: Compare TreeInt where
+  compare EmptyTree EmptyTree = Equals
+  compare EmptyTree _ = Lower
+  compare _ EmptyTree = Greater
+  compare (Node n1) (Node n2)
+          | n1.value /= n2.value = compare n1.value n2.value
+          | otherwise = case compare n1.left n2.left of
+                          Equals -> compare n1.right n2.right
+                          cmpResult -> cmpResult
 
 -- 6. Think about and define a class that can concatenate two ListInt or two
 -- ListString
@@ -258,18 +347,27 @@ concatenateListInt Empty l2 = l2
 concatenateListInt (MkList int1 listint1) list2 = 
            MkList int1 (concatenateListInt listint1 list2)
 
--- class Concatenating a where
---     concat :: ???
+concatenateListString :: ListString -> ListString -> ListString
+concatenateListString EmptyLS l2 = l2
+concatenateListString (MkListString s1 list1) list2 = 
+           MkListString s1 (concatenateListString list1 list2)
 
--- instance concatenatingListInt :: Concatenating ListInt where
---    ...
+class Concatenating a where
+    concat :: a -> a -> a
 
--- instance concatenatingListString :: Concatenating ListString where
---    ...
+instance concatenatingListInt :: Concatenating ListInt where
+   concat = concatenateListInt
+
+instance concatenatingListString :: Concatenating ListString where
+   concat = concatenateListString
 
 -- concat (MkList 1 Empty) (MkList 2 Empty)
 -- concat (MkStringList "1" EmptyLS) (MkStringList "2" EmptyLS)
 
 -- 7. Could you define an instance of 'Concatenating' for String where we (<>) strings together?
+instance concatenatingString :: Concatenating String where
+  concat :: String -> String -> String
+  concat s1 s2 = s1 <> s2
+
 -- 8. Could you define an instance of 'Concatenating' for Int where we add numbers?
 -- 9. The same question, but for booleans using the operation (&&)?

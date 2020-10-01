@@ -1,9 +1,15 @@
 1. Lambda Calculus
 2. Types
 3. Recursive Types & Functions
-4. Typeclasses + Records <- we are here
+4. Typeclasses + Records
 5. Semigroup & Monoids & More (numerics & booleans)
-6. Polymorphic functions, typing rules?
-7. HKT + Functors
-8. Applicative & Monad
-9. Type Algebra
+----- ^^^^ We are here
+
+6. HKT + Functors
+7. Applicative & Monad
+8. Effects
+9. Start building a real program
+...
+8. function instances for Semigroup, Monoid, etc. (**), Typeclass counter examples
+9. Curry-Howard
+...
