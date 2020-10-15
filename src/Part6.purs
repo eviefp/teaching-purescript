@@ -218,63 +218,121 @@ instance eitherFunctor :: Functor' (Either r) where
 
 -- returns true if the constructor is 'Just'
 isJust :: forall a. Maybe a -> Boolean
-isJust _ = true
+isJust Nothing = false
+isJust (Just _) = true
 
 -- returns true if the constructor is 'Right'
-isRight ::  forall a b. Either a b -> Boolean
-isRight _ = true
+isRight :: forall a b. Either a b -> Boolean
+isRight r = case r of
+    Left  _ -> false
+    Right _ -> true
 
 -- note "Missing value" Nothing  == Left "Missing value"
 -- note "Missing value" (Just 1) == Right 1
-note :: forall a b. a -> Maybe b -> Either a b
-note a _ = Left a
+note :: forall b. Maybe b -> Either String b
+note Nothing = Left "missing value"
+note (Just x) = Right x   
 
--- hush (Left "Missing Value") == Nothing
+-- hush (Left _) == Nothing
 -- hush (Right 1) == Just 1
 hush :: forall a b. Either a b -> Maybe b
-hush _ = Nothing
+hush (Left _) = Nothing
+hush (Right x) = Just x
 
 -- Returns how many elements are in total.
 length :: forall a. List a -> Int
-length _ = 0
+length Nil = 0
+length (Cons _ rest) =  1 + length rest
 
 -- index 0 [1, 2, 3] == Just 1
 -- index 1 [1, 2, 3] == Just 2
 -- index 10 [1, 2, 3] == Nothing
 index :: forall a. Int -> List a -> Maybe a
-index _ _ = Nothing
+index _ Nil = Nothing
+index 0 (Cons x _) = Just x
+index n (Cons _ rest)
+   | n < 0     = Nothing
+   | otherwise = index (n-1) rest
 
+-- fold 0 (+) [1, 2, 3] == 6
 -- Hint: we also defined it for ListInt. Maybe it helps :-)
 fold :: forall a b. b -> (a -> b -> b) -> List a -> b
-fold b _ _ = b
+fold b f Nil = b
+fold b f (Cons a rest) = f a (fold b f rest)
 
 -- [Hard] Note that you have to use both <> and mempty to solve this:
 fold' :: forall m. Monoid m => List m -> m
-fold' _ = mempty
-
+fold' l = fold mempty (<>) l
 
 -- Define Functor instances for the following types:
 
 -- Simple
 data Identity a = Identity a
 
+instance identityFunctor :: Functor' Identity where
+  map' :: forall a b. (a -> b) -> Identity a -> Identity b
+  map' a2b (Identity a) = Identity (a2b a)
+
 
 -- Product types
 data Pair a = Pair a a
 
+pairValue :: Pair Int
+pairValue = Pair 1 2
+
+getFirst :: Pair Int -> Int
+getFirst (Pair x _) = x
+
+
+instance pairFunctor :: Functor' Pair where
+  map' :: forall a b. (a -> b) -> Pair a -> Pair b
+  map' a2b (Pair a1 a2) = Pair (a2b a1) (a2b a2)
+  
+
 data TwoPair a b = TwoPair a b
 
-data ThreePair a b c = ThreePair a b c
+instance twopairFunctor :: Functor' (TwoPair x) where
+  map' :: forall a b x. (a -> b) -> TwoPair x a -> TwoPair x b
+  map' a2b (TwoPair x a) = TwoPair x (a2b a)
 
-data OtherPair a b = OtherPair b a b
+data ThreePair x y z = ThreePair x y z
+
+instance threepairFunctor :: Functor' (ThreePair x y)  where
+  map' :: forall x y a b. (a -> b) -> ThreePair x y a -> ThreePair x y b 
+  map' a2b (ThreePair x y a) = ThreePair x y (a2b a)
+  
+
+data OtherPair x y = OtherPair y x y
+
+instance otherpairFunctor :: Functor' (OtherPair x) where 
+  map' :: forall x a b. (a -> b) -> OtherPair x a -> OtherPair x b
+  map' a2b (OtherPair a x a') = OtherPair (a2b a) x (a2b a') 
 
 -- Sum types
 data SumOne a = One | Two | Three a
 
-data SumTwo a b c = This a | That b | Other c
+instance sumoneFunctor :: Functor' SumOne where
+  map' :: forall a b. (a -> b) -> SumOne a -> SumOne b
+  map' _ One = One
+  map' _ Two = Two
+  map' a2b (Three a) = Three (a2b a)
+
+
+data SumTwo x y z = This x | That y | Other z
+
+instance sumtwoFunctor :: Functor' (SumTwo x y) where
+  map' :: forall x y a b. (a -> b) -> SumTwo x y a -> SumTwo x y b
+  map' _ (This x) = This x
+  map' _ (That y) = That y
+  map' a2b (Other a) = Other (a2b a) 
 
 -- Recursive type
 
 data Tree a
     = Empty
     | Node (Tree a) a (Tree a)
+  
+instance treeFunctor :: Functor' Tree where
+  map' :: forall a b. (a -> b) -> Tree a -> Tree b
+  map' _ Empty = Empty 
+  map' a2b (Node left a right) = Node(map' a2b left) (a2b a) (map' a2b right)
