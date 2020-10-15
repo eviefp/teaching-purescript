@@ -1,4 +1,4 @@
-module Part3 where
+ module Part3 where
 
 import Prelude hiding (map)
 

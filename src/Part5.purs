@@ -268,30 +268,92 @@ f9 a2b2c a2b a =
   -- Homework
 
   -- 1. Define a new type for And and write Semigroup and Monoid instance
+data And = And Boolean
+
+-- It is not possible to define two instances for the same class and type combination.
+instance semigroupAnd :: Semigroup' And where
+   append' (And s1) (And s2) = And (s1 && s2)
+
+instance monoidAnd :: Monoid' And where
+  mempty' = And true
+
+-- for any And a, we want it to be true that:
+-- a <> mempty' = a
+
   -- 2. Define a new type for Or and write Semigroup and Monoid instance
+
+data Or = Or Boolean
+
+instance semigroupOr :: Semigroup' Or where
+   append' (Or s1) (Or s2) = Or (s1 || s2)
+
+instance monoidOr :: Monoid' Or where
+  mempty' = Or false
+
+-------------------------------------------------------
 
 data Weekday
     = Mon | Tue | Wed | Thu | Fri | Sat | Sun
 
+toInt :: Weekday -> Int
+toInt Mon = 1
+toInt Tue = 2
+toInt Wed = 3
+toInt Thu = 4
+toInt Fri = 5
+toInt Sat = 6
+toInt Sun = 7
+
   -- 3. Define Eq instance for Weekday
   -- instance eqWeekday :: Eq Weekday where
   --  eq _ _ = ???
+
+instance eqWeekday :: Eq Weekday where
+  -- eq Mon Mon = true
+  -- eq Tue Tue = true
+  -- ...
+  -- eq _ _ = false
+  eq a b = toInt a == toInt b
 
   -- 4. Define Ord instance for Weekday. The possible values to return are
   --   EQ, LT, GT (instead of Equals, Lower, Greater)
   -- instance ordWeekday :: Ord Weekday where
   --   compare _ _ = ???
 
+instance weekdayOrd :: Ord Weekday where
+  -- = compare (toInt a) (toInt b)
+  compare a b
+    | a == b = EQ
+    | toInt a > toInt b = GT
+    | otherwise = LT 
+
   -- 5. Define Bounded instance for Weekday.
-  
+instance boundedWeekday :: Bounded' Weekday where
+  top' = Sun
+  bottom' = Mon
+
   -- 6. Implement the following functions:
   -- Important: Usually, we want to try to "use" all our inputs when we write functions.
 
--- h1 :: (a -> b -> c) -> (c -> d) -> (a -> b) -> a -> d
+h1 :: forall a b c d. (a -> b -> c) -> (c -> d) -> (a -> b) -> a -> d
+h1 a2b2c c2d a2b a =
+  let b = a2b a
+      c = a2b2c a b
+      d = c2d c
+  in d
 
--- h2 :: (a -> b -> c -> d) -> (a -> b) -> (a -> c) -> a -> d
+h2 :: forall a b c d. (a -> b -> c -> d) -> (a -> b) -> (a -> c) -> a -> d
+h2 a2b2c2d a2b a2c a = 
+ let b = a2b a
+     c = a2c a
+     d = a2b2c2d a b c
+ in d
 
--- h3 :: a -> b -> (a -> b) -> (b -> b -> c) -> c
+h3 :: forall a b c. a -> b -> (a -> b) -> (b -> b -> c) -> c
+h3 a b a2b b2b2c =
+ let b' = a2b a
+     c = b2b2c b' b
+ in c
 
 -- a few examples:
 monoidal :: forall a b. Monoid a => (a -> b) -> b
@@ -303,8 +365,16 @@ increment a = a + one
 --------------
 
 multiConcat :: forall a. Semigroup a => a -> a -> a -> a
+multiConcat a1 a2 a3 = a1 <> a2 <> a3
 
 
 combine :: forall a b. Semigroup b => a -> a -> (a -> b) -> b
+combine a1 a2 a2b = 
+ let b1 = a2b a1
+     b2 = a2b a2
+  in b1 <> b2
+
+combine' :: forall a b. Semigroup b => a -> a -> (a -> b) -> b
+combine' a1 a2 a2b = a2b a1 <> a2b a2
 
 
