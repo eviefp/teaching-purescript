@@ -5,10 +5,13 @@
 5. Semigroup & Monoids & More (numerics & booleans) & polymorphic functions
 6. HKT + Functors
 7. Applicative & Monad
------ ^^^^ We are here
 8. Effects
+----- ^^^^ We are here
 9. Start building a real program
-...
-8. function instances for Semigroup, Monoid, etc. (**), Typeclass counter examples
-9. Curry-Howard
-...
+
+
+
+
+
+10. function instances for Semigroup, Monoid, etc. (**), Typeclass counter examples
+11. Curry-Howard

@@ -1,0 +1,13 @@
+{
+    "files": [
+        { "from": "spago.dhall"
+        , "to": "spago-new.dhall"
+        },
+        { "from": "spago.dhall"
+        , "to": "spago-new2.dhall"
+        },
+        { "from": "spago-new2.dhall"
+        , "to": "spago-new3.dhall"
+        }
+    ]
+}

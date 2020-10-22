@@ -1,0 +1,4 @@
+{
+    "from": "spago.dhall",
+    "to": "spago-new2.dhall"
+}
