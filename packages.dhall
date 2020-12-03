@@ -109,3 +109,20 @@ let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20200822/packages.dhall sha256:b4f151f1af4c5cb6bf5437489f4231fbdd92792deaf32971e6bcb0047b3dd1f8
 
 in  upstream
+  with node-readline-aff =
+    { dependencies =
+        [ "exceptions"
+        , "console"
+        , "either"
+        , "node-streams"
+        , "aff"
+        , "prelude"
+        , "options"
+        , "psci-support"
+        , "node-readline"
+        ]
+    , repo =
+      "https://github.com/ChrisPenner/purescript-node-readline-aff"
+    , version =
+        "v0.3.0"
+    }
